@@ -74,39 +74,7 @@ static int step_time(int level)
  */
 static void keydance_timerfn(unsigned long unused)
 {
-	unsigned char old_state;
-
-	spin_lock(&keydance_lock);
-	if (!game_running)
-		goto stop;
-
-	/* refresh lock_state and save its old value */
-	old_state = lock_state;
-	get_random_bytes(&lock_state, 1);
-	lock_state &= 0x07;
-
-        /* if user hits all required keys, old_state should be 0 */
-	if (old_state || extras) {
-		misses++;
-		if (misses >= MISSES_TO_STOP)
-			goto stop;
-	} else {
-		hits++;
-		level = hits / HITS_PER_LEVEL;
-		if (level >= LEVEL_TO_STOP)
-			goto stop;
-	}
-	extras = 0;
-
-	/* set LEDs to new state */
-	i8042_led_blink(lock_state);
-	mod_timer(&keydance_timer, jiffies + step_time(level));
-	spin_unlock(&keydance_lock);
-	return;
-stop:
-	game_running = false;
-	i8042_led_blink(0);
-	spin_unlock_irq(&keydance_lock);
+	/* WRITE YOUR OWN CODE HERE */
 	return;
 }
 
@@ -118,17 +86,7 @@ stop:
 static ssize_t write_keydance_start(struct file *file, const char __user *buf,
                                     size_t count, loff_t *ppos)
 {
-        if (!game_running && count) {
-		/* reset stats and clear LEDs before game starts */
-		lock_state = 0;
-		i8042_led_blink(lock_state);
-		extras = 0;
-		misses = 0;
-		hits = 0;
-		level = 0;
-		game_running = true;
-		mod_timer(&keydance_timer, jiffies + step_time(level));
-        }
+	/* WRITE YOUR OWN CODE HERE */
         return count;
 }
 
@@ -193,27 +151,7 @@ static void led_test(void)
  */
 static irqreturn_t keydance_threadfn(int irq, void *id)
 {
-	int i;
-	unsigned char scancode;
-
-	/* timerfn and threadfn may run concurrently on different CPUs */
-	spin_lock_irq(&keydance_lock);
-	if (!game_running)
-		goto end;
-
-	scancode = i8042_read_data();
-	for (i=0; i<3; i++)
-		if (scancode == dancekey_scancode_table[i])
-			break;
-	if (i<3) {
-		if (lock_state & (1<<i)) {
-			lock_state &= ~(1<<i);
-			i8042_led_blink(lock_state);
-		} else
-			extras++;
-	}
-end:
-	spin_unlock_irq(&keydance_lock);
+	/* WRITE YOUR OWN CODE HERE */
 	return IRQ_HANDLED;
 }
 
@@ -222,12 +160,7 @@ end:
  */
 static irqreturn_t keydance_interrupt(int irq, void *id)
 {
-	if (!game_running)
-		return IRQ_NONE;
-
-	/* Normally device interrupt should be disabled before waking up the 
-           IRQ thread. Don't do that here since it will interfere with the 
-           i8042 driver in the kernel and make keyboard functionless */
+	/* WRITE YOUR OWN CODE HERE */
 	return IRQ_WAKE_THREAD;
 }
 
