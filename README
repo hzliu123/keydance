@@ -1,0 +1,9 @@
+
+Linux kernel programming homework
+Key dancing using PS/2 keyboard LED as indicator
+
+Verified on Linux kernel version 4.4
+
+Run ./start_game.sh to play. 
+Key 1, 2, 3 is paired with Numlock, Capslock, Scrolllock.
+
