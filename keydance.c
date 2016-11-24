@@ -47,7 +47,6 @@ static spinlock_t keydance_lock;
 
 /* 4, 2, 3 are the scancodes for key 1, key 2, key 3 respectively */
 static const char dancekey_scancode_table[3] = { 4, 2, 3 };
-static unsigned char scancode;
 
 /* Game statistics */
 static bool game_running = false; /* two modes: running and stop mode */ 
@@ -193,12 +192,14 @@ static void led_test(void) {
  */
 static irqreturn_t keydance_threadfn(int irq, void *id) {
 	int i;
+	unsigned char scancode;
 
 	/* timerfn and threadfn may run on different CPUs */
 	spin_lock_irq(&keydance_lock);
 	if (!game_running)
 		goto end;
 
+	scancode = i8042_read_data();
 	for (i=0; i<3; i++)
 		if (scancode == dancekey_scancode_table[i])
 			break;
@@ -215,13 +216,12 @@ end:
 }
 
 /* interrupt handler: 
- * Only read scancode. The rest jobs are done in the irq thread.
+ * Only wake up irq thread to do the job.
  */
 static irqreturn_t keydance_interrupt(int irq, void *id) {
 	if (!game_running)
 		return IRQ_NONE;
 
-	scancode = i8042_read_data();
 	return IRQ_WAKE_THREAD;
 }
 
