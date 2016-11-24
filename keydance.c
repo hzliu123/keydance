@@ -184,7 +184,7 @@ static void led_test(void) {
 }
 
 /* IRQ thread:
- * 1. Find input key in the dancekey scancode table. 
+ * 1. Get input key and search it in the dancekey scancode table. 
  * 2. If it's a match key, clear corresponding bit of lock_state and update 
  *    LED accordingly.
  * 3. If it's a wrong key, count it in extras, which is used by timerfn to 
@@ -194,7 +194,7 @@ static irqreturn_t keydance_threadfn(int irq, void *id) {
 	int i;
 	unsigned char scancode;
 
-	/* timerfn and threadfn may run on different CPUs */
+	/* timerfn and threadfn may run concurrently on different CPUs */
 	spin_lock_irq(&keydance_lock);
 	if (!game_running)
 		goto end;
@@ -222,6 +222,9 @@ static irqreturn_t keydance_interrupt(int irq, void *id) {
 	if (!game_running)
 		return IRQ_NONE;
 
+	/* Normally device interrupt should be disabled before waking up the 
+           IRQ thread. Don't do that here since it will interfere with the 
+           i8042 driver in the kernel and make keyboard functionless */
 	return IRQ_WAKE_THREAD;
 }
 
@@ -229,13 +232,13 @@ static int __init keydance_init(void) {
 	struct proc_dir_entry *entry;
 	int error;
 
+	led_test();
 	spin_lock_init(&keydance_lock);
 	error = request_threaded_irq(I8042_KBD_IRQ, keydance_interrupt,
-				     keydance_threadfn, IRQF_SHARED, "keydance", 
-                                     &lock_state);
+				keydance_threadfn, IRQF_SHARED, "keydance", 
+				&lock_state);
 	if (error)
 		return error;
-
 	entry = proc_create(keydance_start_fname, S_IWUGO, NULL, \
 			    &keydance_start_proc_fops);
 	if (IS_ERR_OR_NULL(entry))
@@ -247,8 +250,6 @@ static int __init keydance_init(void) {
 
 	init_timer(&keydance_timer);
 	keydance_timer.function = keydance_timerfn;
-
-	led_test();
 	return 0;
 fail2:
 	remove_proc_entry(keydance_start_fname, NULL);

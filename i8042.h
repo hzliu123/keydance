@@ -1,16 +1,6 @@
 #include <linux/delay.h>
 #include <linux/i8042.h>
 
-#ifdef DEBUG
-#define dbg(format, arg...)                                        \
-        do {                                                       \
-                printk(KERN_DEBUG KBUILD_MODNAME ": [%d] " format, \
-                       (int)jiffies, ##arg); 			   \
-        } while (0)
-#else
-#define dbg(format, arg...)
-#endif
-
 #define I8042_KBD_IRQ  1
 
 static int i8042_command_reg = 0x64;
@@ -62,15 +52,14 @@ static long i8042_led_blink(char state)
 
         while (i8042_read_status() & I8042_STR_IBF)
                 DELAY;
-        dbg("%02x -> i8042 (blink)\n", 0xed);
+        pr_debug("%02x -> i8042 (blink)\n", 0xed);
         i8042_write_data(0xed); /* set leds */
         DELAY;
         while (i8042_read_status() & I8042_STR_IBF)
                 DELAY;
         DELAY;
-        dbg("%02x -> i8042 (blink)\n", state);
+        pr_debug("%02x -> i8042 (blink)\n", state);
         i8042_write_data(state);
         DELAY;
         return delay;
 }
-
