@@ -194,9 +194,10 @@ static void led_test(void) {
 static irqreturn_t keydance_threadfn(int irq, void *id) {
 	int i;
 
+	/* timerfn and threadfn may run on different CPUs */
 	spin_lock_irq(&keydance_lock);
 	if (!game_running)
-		return IRQ_NONE;
+		goto end;
 
 	for (i=0; i<3; i++)
 		if (scancode == dancekey_scancode_table[i])
@@ -208,8 +209,8 @@ static irqreturn_t keydance_threadfn(int irq, void *id) {
 		} else
 			extras++;
 	}
+end:
 	spin_unlock_irq(&keydance_lock);
-
 	return IRQ_HANDLED;
 }
 
