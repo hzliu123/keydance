@@ -170,7 +170,8 @@ static const struct file_operations keydance_result_proc_fops = {
 };
 
 /* flashing all 3 LEDs 5 times */
-static void led_test(void) {
+static void led_test(void)
+{
 	int total, delay = 200;
 	char state = 0;
 
@@ -190,7 +191,8 @@ static void led_test(void) {
  * 3. If it's a wrong key, count it in extras, which is used by timerfn to 
  *    calculate misses 
  */
-static irqreturn_t keydance_threadfn(int irq, void *id) {
+static irqreturn_t keydance_threadfn(int irq, void *id)
+{
 	int i;
 	unsigned char scancode;
 
@@ -218,7 +220,8 @@ end:
 /* interrupt handler: 
  * Only wake up irq thread to do the job.
  */
-static irqreturn_t keydance_interrupt(int irq, void *id) {
+static irqreturn_t keydance_interrupt(int irq, void *id)
+{
 	if (!game_running)
 		return IRQ_NONE;
 
@@ -228,7 +231,8 @@ static irqreturn_t keydance_interrupt(int irq, void *id) {
 	return IRQ_WAKE_THREAD;
 }
 
-static int __init keydance_init(void) {
+static int __init keydance_init(void)
+{
 	struct proc_dir_entry *entry;
 	int error;
 
@@ -257,7 +261,8 @@ fail1:
 	return -ENOMEM;
 }
 
-static void __exit keydance_exit(void) {
+static void __exit keydance_exit(void)
+{
 	/* CAUTION: Undo in the right order and note possible race conditions!
                     May need to wait for a game to end */
 	game_running = false;
