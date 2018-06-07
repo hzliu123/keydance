@@ -72,7 +72,7 @@ static int step_time(int level)
  * 4. update LEDs
  * 5. set timer for next expire
  */
-static void keydance_timerfn(unsigned long unused)
+static void keydance_timerfn(struct timer_list *unused)
 {
 	unsigned char old_state;
 
@@ -252,8 +252,7 @@ static int __init keydance_init(void)
 	if (IS_ERR_OR_NULL(entry))
 		goto fail2;
 
-	init_timer(&keydance_timer);
-	keydance_timer.function = keydance_timerfn;
+	timer_setup(&keydance_timer, keydance_timerfn, 0);
 	return 0;
 fail2:
 	remove_proc_entry(keydance_start_fname, NULL);
