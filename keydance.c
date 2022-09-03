@@ -91,8 +91,8 @@ static ssize_t write_keydance_start(struct file *file, const char __user *buf,
 }
 
 /* /proc/keydance-start is write only. Define only the write method */
-static const struct file_operations keydance_start_proc_fops = {
-        .write = write_keydance_start,
+static const struct proc_ops keydance_start_proc_ops = {
+        .proc_write = write_keydance_start,
 };
 
 /* /proc/keydance-result seq_file show method 
@@ -120,11 +120,11 @@ static int keydance_result_proc_open(struct inode *inode, struct file *file)
         return single_open(file, keydance_result_proc_show, NULL);
 }
 
-static const struct file_operations keydance_result_proc_fops = {
-        .open           = keydance_result_proc_open,
-        .read           = seq_read,
-        .llseek         = seq_lseek,
-        .release        = single_release,
+static const struct proc_ops keydance_result_proc_ops = {
+        .proc_open      = keydance_result_proc_open,
+        .proc_read      = seq_read,
+        .proc_lseek     = seq_lseek,
+        .proc_release   = single_release,
 };
 
 /* flashing all 3 LEDs 5 times */
@@ -177,11 +177,11 @@ static int __init keydance_init(void)
 	if (error)
 		return error;
 	entry = proc_create(keydance_start_fname, S_IWUGO, NULL, \
-			    &keydance_start_proc_fops);
+			    &keydance_start_proc_ops);
 	if (IS_ERR_OR_NULL(entry))
 		goto fail1;
 	entry = proc_create(keydance_result_fname, S_IRUGO, NULL, \
-                            &keydance_result_proc_fops);
+                            &keydance_result_proc_ops);
 	if (IS_ERR_OR_NULL(entry))
 		goto fail2;
 
