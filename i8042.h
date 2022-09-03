@@ -1,5 +1,6 @@
 #include <linux/delay.h>
 #include <linux/i8042.h>
+#include <asm/io.h>
 
 #define I8042_KBD_IRQ  1
 
